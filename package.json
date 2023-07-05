@@ -1,0 +1,32 @@
+{
+  "name": "blogger",
+  "version": "1.0.0",
+  "description": "Full-Stack Blog Application",
+  "main": "server.js",
+  "scripts": {
+    "server": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chinmayk2002/Blogger.git"
+  },
+  "keywords": [
+    "Blog",
+    "Blogger"
+  ],
+  "author": "Chinmay Kamble",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chinmayk2002/Blogger/issues"
+  },
+  "homepage": "https://github.com/Chinmayk2002/Blogger#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mongoose": "^7.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
