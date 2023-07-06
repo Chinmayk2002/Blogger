@@ -15,11 +15,11 @@ const {
 const protected = require("../../middlewares/protected");
 const userRoutes = express.Router();
 
-//multer instance
+//instance of multer
 const upload = multer({ storage });
 
 //POST/api/v1/users/register
-userRoutes.post("/register", registerCtrl);
+userRoutes.post("/register", upload.single("profile"), registerCtrl);
 
 //POST/api/v1/users/login
 userRoutes.post("/login", loginCtrl);
@@ -27,7 +27,7 @@ userRoutes.post("/login", loginCtrl);
 //GET/api/v1/users/profile
 userRoutes.get("/profile", protected, profileCtrl);
 
-//PUT/api/v1/users/profile-photo-upload/
+//PUT/api/v1/users/profile-photo-upload/:id
 userRoutes.put(
   "/profile-photo-upload/",
   protected,
@@ -35,7 +35,7 @@ userRoutes.put(
   uploadProfilePhotoCtrl
 );
 
-//PUT/api/v1/users/cover-photo-upload
+//PUT/api/v1/users/cover-photo-upload/:id
 userRoutes.put(
   "/cover-photo-upload/",
   protected,
