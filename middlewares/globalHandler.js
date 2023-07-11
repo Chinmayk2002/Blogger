@@ -1,12 +1,14 @@
 const globalErrHandler = (err, req, res, next) => {
-  //stack - which file/line the error has occured
+  //status: failed/something/server error
+  //messsage
+  //stack
   const stack = err.stack;
-  const message = err.message;
+  const messsage = err.message;
   const status = err.status ? err.status : "failed";
   const statusCode = err.statusCode ? err.statusCode : 500;
   //send response
   res.status(statusCode).json({
-    message,
+    messsage,
     status,
     stack,
   });

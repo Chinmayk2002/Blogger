@@ -3,12 +3,10 @@ const User = require("../../model/user/User");
 const appErr = require("../../utils/appErr");
 //create
 const createPostCtrl = async (req, res, next) => {
-  console.log(req.file);
-  console.log(req.body);
   const { title, description, category, user } = req.body;
   try {
     if (!title || !description || !category || !req.file) {
-      return next(appErr("All fields are required"));
+      return res.render("posts/addPost", { error: "All fields are required" });
     }
     //Find the user
     const userId = req.session.userAuth;
@@ -25,23 +23,22 @@ const createPostCtrl = async (req, res, next) => {
     userFound.posts.push(postCreated._id);
     //re save
     await userFound.save();
-    res.json({
-      status: "success",
-      data: postCreated,
-    });
+    //redirect
+    res.redirect("/");
   } catch (error) {
-    next(appErr(error.message));
+    return res.render("posts/addPost", { error: error.message });
   }
 };
 
 //all
 const fetchPostsCtrl = async (req, res, next) => {
   try {
-    const posts = await Post.find().populate("comments");
+    const posts = await Post.find().populate("comments").populate("user");
     res.json({
       status: "success",
       data: posts,
     });
+    console.log(posts);
   } catch (error) {
     next(appErr(error.message));
   }
@@ -53,10 +50,17 @@ const fetchPostCtrl = async (req, res, next) => {
     //get the id from params
     const id = req.params.id;
     //find the post
-    const post = await Post.findById(id).populate("comments");
-    res.json({
-      status: "success",
-      data: post,
+    const post = await Post.findById(id)
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+        },
+      })
+      .populate("user");
+    res.render("posts/postDetails", {
+      post,
+      error: "",
     });
   } catch (error) {
     next(appErr(error.message));
@@ -70,16 +74,20 @@ const deletePostCtrl = async (req, res, next) => {
     const post = await Post.findById(req.params.id);
     //check if the post belongs to the user
     if (post.user.toString() !== req.session.userAuth.toString()) {
-      return next(appErr("You are not allowed to delete this post", 403));
+      return res.render("posts/postDetails", {
+        error: "You are not authorized to delete this post",
+        post,
+      });
     }
     //delete post
     await Post.findByIdAndDelete(req.params.id);
-    res.json({
-      status: "success",
-      data: "Post has been deleted successfully",
-    });
+    //redirect
+    res.redirect("/");
   } catch (error) {
-    next(appErr(error.message));
+    return res.render("posts/postDetails", {
+      error: error.message,
+      post: "",
+    });
   }
 };
 
@@ -91,28 +99,47 @@ const updatepostCtrl = async (req, res, next) => {
     const post = await Post.findById(req.params.id);
     //check if the post belongs to the user
     if (post.user.toString() !== req.session.userAuth.toString()) {
-      return next(appErr("You are not allowed to update this post", 403));
+      return res.render("posts/updatePost", {
+        post: "",
+        error: "You are not authorized to update this post",
+      });
     }
-    //update
-    const postUpdated = await Post.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        description,
-        category,
-        image: req.file.path,
-      },
-      {
-        new: true,
-      }
-    );
+    //check if user is updating image
+    if (req.file) {
+      await Post.findByIdAndUpdate(
+        req.params.id,
+        {
+          title,
+          description,
+          category,
+          image: req.file.path,
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      //update
+      await Post.findByIdAndUpdate(
+        req.params.id,
+        {
+          title,
+          description,
+          category,
+        },
+        {
+          new: true,
+        }
+      );
+    }
 
-    res.json({
-      status: "success",
-      data: postUpdated,
-    });
+    //redirect
+    res.redirect("/");
   } catch (error) {
-    res.json(error);
+    return res.render("posts/updatePost", {
+      post: "",
+      error: error.message,
+    });
   }
 };
 module.exports = {
